@@ -7,11 +7,12 @@ endif()
 
 # find dependencies
 find_package(joy REQUIRED)
-find_package(input REQUIRED)
+find_package(control REQUIRED)
+find_package(robot_state_publisher REQUIRED)
 
 #INSTALL
 install(
-        DIRECTORY launch
+        DIRECTORY launch config description
         DESTINATION share/${PROJECT_NAME}/
 )
 

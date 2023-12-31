@@ -9,6 +9,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
+from launch_ros.actions import Node
 
 def generate_launch_description():
     # ROS Packages
@@ -16,11 +17,20 @@ def generate_launch_description():
     
     # Launch Arguments
     dev = LaunchConfiguration('dev', default='/dev/input/js0')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+
+    use_joint_state_publisher = LaunchConfiguration('use_joint_state_publisher', default='false')
+
+    # URDF
+    urdf_dir = os.path.join(robot_arm, 'description')
+    urdf_file = os.path.join(urdf_dir, 'robot_arm.urdf')
+    with open(urdf_file, 'r') as infp:
+        robot_desc = infp.read()
 
     # Nodes
-    input = IncludeLaunchDescription(
+    control = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(robot_arm, 'launch', 'include/input.launch.py')
+            os.path.join(robot_arm, 'launch', 'include/control.launch.py')
         )
     )
 
@@ -33,6 +43,34 @@ def generate_launch_description():
         }.items()
     )
 
+    rviz = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(robot_arm, 'launch', 'include/rviz.launch.py')
+        )
+    )
+
+    joint_state_publisher = Node(package='joint_state_publisher',
+                                 executable='joint_state_publisher',
+                                 name='joint_state_publisher',
+                                 output='screen',
+                                 condition = IfCondition(use_joint_state_publisher),
+                                 )
+    joint_state_publisher_gui = Node(package='joint_state_publisher_gui',
+                                    executable='joint_state_publisher_gui',
+                                    name='joint_state_publisher_gui',
+                                    output='screen',
+                                    condition = UnlessCondition(use_joint_state_publisher),
+                                    )
+
+    robot_state_publisher = Node(package='robot_state_publisher',
+                                executable='robot_state_publisher',
+                                name='robot_state_publisher',
+                                output='screen',
+                                parameters=[{
+                                    'use_sim_time': use_sim_time,
+                                    'robot_description': robot_desc
+                                }])
+
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -41,6 +79,10 @@ def generate_launch_description():
             description='Joystick device'
         ),
 
-        input,
-        joy_node
+        control,
+        joy_node,
+        rviz,
+        joint_state_publisher,
+        robot_state_publisher,
+        joint_state_publisher_gui,
     ])

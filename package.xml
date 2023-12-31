@@ -10,9 +10,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>joy</exec_depend>
-
-  <!-- ISC Auton Stack-->
-  <exec_depend>input</exec_depend>
+  <exec_depend>control</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
 
   <exec_depend>ros2launch</exec_depend>
   <exec_depend>launch</exec_depend>

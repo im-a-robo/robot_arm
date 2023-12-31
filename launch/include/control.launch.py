@@ -7,13 +7,13 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # Launch Arguments
 
-    input = Node(
-        package='input',
-        executable='input',
-        name='input',
+    control = Node(
+        package='control',
+        executable='control',
+        name='control',
         output='screen',
     )
 
     return LaunchDescription([
-        input
+        control
     ])
