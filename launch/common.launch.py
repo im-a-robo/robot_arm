@@ -11,6 +11,8 @@ from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 
+import xacro
+
 def generate_launch_description():
     # ROS Packages
     robot_arm = get_package_share_directory('robot_arm')
@@ -23,9 +25,11 @@ def generate_launch_description():
 
     # URDF
     urdf_dir = os.path.join(robot_arm, 'description')
-    urdf_file = os.path.join(urdf_dir, 'robot_arm.urdf')
-    with open(urdf_file, 'r') as infp:
-        robot_desc = infp.read()
+    urdf_file = os.path.join(urdf_dir, 'robot_arm.urdf.xacro')
+    # with open(urdf_file, 'r') as infp:
+    #     robot_desc = infp.read()
+
+    robot_desc = xacro.process_file(urdf_file).toxml()
 
     # Nodes
     control = IncludeLaunchDescription(
@@ -70,6 +74,17 @@ def generate_launch_description():
                                     'use_sim_time': use_sim_time,
                                     'robot_description': robot_desc
                                 }])
+    
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+        )
+
+
+    spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
+                    arguments=['-topic', 'robot_description',
+                                '-entity', 'robot_arm'],
+                    output='screen')
 
 
     return LaunchDescription([
@@ -82,7 +97,9 @@ def generate_launch_description():
         control,
         joy_node,
         rviz,
-        joint_state_publisher,
+        # joint_state_publisher,
         robot_state_publisher,
         joint_state_publisher_gui,
+        gazebo,
+        spawn_entity,
     ])
