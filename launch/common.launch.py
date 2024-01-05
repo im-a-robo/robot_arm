@@ -99,7 +99,7 @@ def generate_launch_description():
         rviz,
         # joint_state_publisher,
         robot_state_publisher,
-        joint_state_publisher_gui,
+        # joint_state_publisher_gui,
         gazebo,
         spawn_entity,
     ])
